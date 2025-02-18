@@ -1,9 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
+		<LangVersion>12.0</LangVersion>
 		<TargetFrameworks>netstandard2.0;net8.0</TargetFrameworks>
 		<Nullable>enable</Nullable>
-		<LangVersion>10.0</LangVersion>
 		<WarningsAsErrors>nullable</WarningsAsErrors>
+		<ImplicitUsings>enable</ImplicitUsings>
+	
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 
@@ -56,6 +58,11 @@ Initial release of OwlCore.Nomad.Kubo.PeerSwarm.
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
+		<PackageReference Include="OwlCore.Nomad.Kubo" Version="0.14.1" />
+		<PackageReference Include="PolySharp" Version="1.15.0">
+		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+		  <PrivateAssets>all</PrivateAssets>
+		</PackageReference>
 		<PackageReference Include="System.Linq.Async" Version="6.0.1" />
 	</ItemGroup>
 
