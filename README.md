@@ -9,7 +9,6 @@ Track and manage a custom Kubo peer swarm across devices.
 - **Pair, roam and update data across devices** thanks to tooling supplied by [OwlCore.Nomad.Kubo](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo/)
 
 All together, this library is designed to allow you to piggyback off the Peer Routing provided by the public [Amino DHT](https://probelab.io/ipfs/amino) for [private Content Routing](https://github.com/ipfs/kubo/blob/master/docs/experimental-features.md#private-networks).
-
 In dotnet, the tracked addresses can be provided to the [`PrivateKuboBootstrapper`](https://github.com/Arlodotexe/OwlCore.Kubo/blob/main/src/PrivateKuboBootstrapper.cs) supplied by the [OwlCore.Kubo](https://github.com/Arlodotexe/OwlCore.Kubo/) library for easy setup.
 
 ## Install
