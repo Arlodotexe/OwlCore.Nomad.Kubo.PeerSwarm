@@ -1,15 +1,16 @@
 # OwlCore.Nomad.Kubo.PeerSwarm [![Version](https://img.shields.io/nuget/v/OwlCore.Nomad.Kubo.PeerSwarm.svg)](https://www.nuget.org/packages/OwlCore.Nomad.Kubo.PeerSwarm)
 
-Description goes here.
-
-Extended description goes here. Tell people why they should use your module, how they can install it, and how they can use it. Documentation takes work!
-
-## 
+Track and manage a custom Kubo peer swarm across devices.
 
 ## Featuring:
-- x
-- y
-- z
+- **Address tracking** for a Kubo peer as [`ModifiablePeer`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ModifiablePeer.cs) or [`ReadOnlyPeer`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ReadOnlyPeer.cs).
+- **Multi-peer tracking**: of `ModifiablePeer` or `ReadOnlyPeer` using [`ModifiablePeerSwarm`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ModifiablePeerSwarm.cs) or [`ReadOnlyPeerSwarm`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ReadOnlyPeerSwarm.cs).
+- **Multi-swarm tracking**: Track entire `ModifiablePeerSwarm`s and `ReadOnlyPeerSwarm`s using [`ModifiablePeerSwarmTracker`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ModifiablePeerSwarmTracker.cs) or [`ReadOnlyPeerSwarmTracker`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ReadOnlyPeerSwarmTracker.cs).
+- **Pair and roam data across devices** thanks to tooling supplied by [OwlCore.Nomad.Kubo](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo/)
+
+All together, this library is designed to allow you to piggyback off the Peer Routing provided by the public [Amino DHT](https://probelab.io/ipfs/amino) for [private Content Routing](https://github.com/ipfs/kubo/blob/master/docs/experimental-features.md#private-networks).
+
+In dotnet, the tracked addresses can be provided to the [`PrivateKuboBootstrapper`](https://github.com/Arlodotexe/OwlCore.Kubo/blob/main/src/PrivateKuboBootstrapper.cs) supplied by the [OwlCore.Kubo](https://github.com/Arlodotexe/OwlCore.Kubo/) library for easy setup.
 
 ## Install
 
@@ -24,7 +25,7 @@ Or using [dotnet](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet)
 ## Usage
 
 ```cs
-var test = new Thing();
+// Coming soon
 ```
 
 ## Financing
