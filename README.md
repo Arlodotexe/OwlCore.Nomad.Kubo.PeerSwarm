@@ -6,7 +6,7 @@ Track and manage a custom Kubo peer swarm across devices.
 - **Address tracking** for a Kubo peer as [`ModifiablePeer`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ModifiablePeer.cs) or [`ReadOnlyPeer`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ReadOnlyPeer.cs).
 - **Multi-peer tracking**: of `ModifiablePeer` or `ReadOnlyPeer` using [`ModifiablePeerSwarm`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ModifiablePeerSwarm.cs) or [`ReadOnlyPeerSwarm`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ReadOnlyPeerSwarm.cs).
 - **Multi-swarm tracking**: Track entire `ModifiablePeerSwarm`s and `ReadOnlyPeerSwarm`s using [`ModifiablePeerSwarmTracker`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ModifiablePeerSwarmTracker.cs) or [`ReadOnlyPeerSwarmTracker`](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo.PeerSwarm/blob/main/src/ReadOnlyPeerSwarmTracker.cs).
-- **Pair and roam data across devices** thanks to tooling supplied by [OwlCore.Nomad.Kubo](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo/)
+- **Pair, roam and update data across devices** thanks to tooling supplied by [OwlCore.Nomad.Kubo](https://github.com/Arlodotexe/OwlCore.Nomad.Kubo/)
 
 All together, this library is designed to allow you to piggyback off the Peer Routing provided by the public [Amino DHT](https://probelab.io/ipfs/amino) for [private Content Routing](https://github.com/ipfs/kubo/blob/master/docs/experimental-features.md#private-networks).
 
