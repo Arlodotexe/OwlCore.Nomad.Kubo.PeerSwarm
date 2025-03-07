@@ -3,11 +3,9 @@ using CommunityToolkit.Diagnostics;
 using Ipfs;
 using Ipfs.CoreApi;
 using OwlCore.ComponentModel;
-using OwlCore.Nomad.Kubo.PeerSwarm;
 using OwlCore.Kubo;
-using OwlCore.Nomad.Kubo;
 
-namespace OwlCore.Console.Nomad.Kubo.PeerSwarm;
+namespace OwlCore.Nomad.Kubo.PeerSwarm;
 
 /// <summary>
 /// Represents a peer swarm that can be read but not modified.

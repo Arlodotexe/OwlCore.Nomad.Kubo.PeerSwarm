@@ -1,10 +1,8 @@
 using Ipfs;
 using Ipfs.CoreApi;
-using OwlCore.Nomad.Kubo.PeerSwarm;
-using OwlCore.Console.Nomad.Kubo.PeerSwarm.Models.Serialization.UpdateEvents;
-using OwlCore.Nomad.Kubo;
+using OwlCore.Nomad.Kubo.Events;
 
-namespace OwlCore.Console.Nomad.Kubo.PeerSwarm;
+namespace OwlCore.Nomad.Kubo.PeerSwarm;
 
 /// <summary>
 /// Provides methods for getting repositories for managing peers, peer swarms and peer swarm trackers.
@@ -20,9 +18,9 @@ public static class PeerSwarmRepoFactory
     /// <param name="client">The IPFS client used to interact with the network.</param>
     /// <param name="kuboOptions">The options used to read and write data to and from Kubo.</param>
     /// <returns>A repository for managing peer swarms.</returns>
-    public static NomadKuboRepository<ModifiablePeerSwarmTracker, IReadOnlyPeerSwarmTracker, Models.PeerSwarmTracker, PeerSwarmTrackerUpdateEvent> GetPeerSwarmTrackerRepository(string roamingKeyName, string localKeyName, NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, PeerSwarmUpdateEvent>? peerRepository, NomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm, Models.PeerSwarm, PeerSwarmUpdateEvent> peerSwarmRepository, ICoreApi client, IKuboOptions kuboOptions)
+    public static NomadKuboRepository<ModifiablePeerSwarmTracker, IReadOnlyPeerSwarmTracker, Models.PeerSwarmTracker, ValueUpdateEvent> GetPeerSwarmTrackerRepository(string roamingKeyName, string localKeyName, NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, ValueUpdateEvent>? peerRepository, NomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm, Models.PeerSwarm, ValueUpdateEvent> peerSwarmRepository, ICoreApi client, IKuboOptions kuboOptions)
     {
-        return new NomadKuboRepository<ModifiablePeerSwarmTracker, IReadOnlyPeerSwarmTracker, Models.PeerSwarmTracker, PeerSwarmTrackerUpdateEvent>
+        return new NomadKuboRepository<ModifiablePeerSwarmTracker, IReadOnlyPeerSwarmTracker, Models.PeerSwarmTracker, ValueUpdateEvent>
         {
             DefaultEventStreamLabel = "Peer Swarm Tracker",
             Client = client,
@@ -54,9 +52,9 @@ public static class PeerSwarmRepoFactory
     /// <param name="client">The IPFS client used to interact with the network.</param>
     /// <param name="kuboOptions">The options used to read and write data to and from Kubo.</param>
     /// <returns>A repository for managing peer swarms.</returns>
-    public static NomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm, Models.PeerSwarm, PeerSwarmUpdateEvent> GetPeerSwarmRepository(string roamingKeyName, string localKeyName, NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, PeerSwarmUpdateEvent> peerRepository, ICoreApi client, IKuboOptions kuboOptions)
+    public static NomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm, Models.PeerSwarm, ValueUpdateEvent> GetPeerSwarmRepository(string roamingKeyName, string localKeyName, NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, ValueUpdateEvent> peerRepository, ICoreApi client, IKuboOptions kuboOptions)
     {
-        return new NomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm, Models.PeerSwarm, PeerSwarmUpdateEvent>
+        return new NomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm, Models.PeerSwarm, ValueUpdateEvent>
         {
             DefaultEventStreamLabel = "Peer Swarm",
             Client = client,
@@ -87,9 +85,9 @@ public static class PeerSwarmRepoFactory
     /// <param name="client">The IPFS client used to interact with the network.</param>
     /// <param name="kuboOptions">The options used to read and write data to and from Kubo.</param>
     /// <returns>A repository for managing peers.</returns>
-    public static NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, PeerSwarmUpdateEvent> GetPeerRepository(string roamingKeyName, string localKeyName, ICoreApi client, KuboOptions kuboOptions)
+    public static NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, ValueUpdateEvent> GetPeerRepository(string roamingKeyName, string localKeyName, ICoreApi client, KuboOptions kuboOptions)
     {
-        return new NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, PeerSwarmUpdateEvent>
+        return new NomadKuboRepository<ModifiablePeer, IReadOnlyPeer, Models.Peer, ValueUpdateEvent>
         {
             DefaultEventStreamLabel = "Peer",
             Client = client,

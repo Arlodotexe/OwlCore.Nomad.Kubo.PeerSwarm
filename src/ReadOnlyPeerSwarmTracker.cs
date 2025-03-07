@@ -1,14 +1,12 @@
+using System.Runtime.CompilerServices;
 using CommunityToolkit.Diagnostics;
 using Ipfs;
 using Ipfs.CoreApi;
 using OwlCore.ComponentModel;
-using OwlCore.Nomad.Kubo.PeerSwarm;
-using OwlCore.Console.Nomad.Kubo.PeerSwarm.Models;
 using OwlCore.Kubo;
-using OwlCore.Nomad.Kubo;
-using System.Runtime.CompilerServices;
+using OwlCore.Nomad.Kubo.PeerSwarm.Models;
 
-namespace OwlCore.Console.Nomad.Kubo.PeerSwarm;
+namespace OwlCore.Nomad.Kubo.PeerSwarm;
 
 /// <summary>
 /// Represents a peer swarm tracker that can be read but not modified.
