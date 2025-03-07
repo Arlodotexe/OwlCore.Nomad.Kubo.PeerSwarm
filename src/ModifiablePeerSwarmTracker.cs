@@ -137,7 +137,7 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<ValueUpdat
     }
 
     /// <inheritdoc />
-    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> eventStreamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
+    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         
@@ -155,7 +155,7 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<ValueUpdat
     /// <param name="peerSwarmId">The ID of the peer swarm being added or removed from the peer swarm tracker.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
-    public async Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> eventStreamEntry, ValueUpdateEvent updateEvent, Cid peerSwarmId, CancellationToken cancellationToken)
+    public async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, Cid peerSwarmId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         
@@ -171,7 +171,7 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<ValueUpdat
     /// <param name="arg">The peer being added or removed from the peer swarm.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
-    public Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> eventStreamEntry, ValueUpdateEvent updateEvent, IReadOnlyPeerSwarm arg, CancellationToken cancellationToken)
+    public Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, IReadOnlyPeerSwarm arg, CancellationToken cancellationToken)
     {
         switch (eventStreamEntry.EventId)
         {

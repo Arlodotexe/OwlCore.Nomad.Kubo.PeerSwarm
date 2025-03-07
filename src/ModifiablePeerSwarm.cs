@@ -158,7 +158,7 @@ public class ModifiablePeerSwarm : NomadKuboEventStreamHandler<ValueUpdateEvent>
     /// <param name="updateEvent">The update event to apply.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
-    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> eventStreamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
+    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         
@@ -176,7 +176,7 @@ public class ModifiablePeerSwarm : NomadKuboEventStreamHandler<ValueUpdateEvent>
     /// <param name="peerId">The peerId being added or removed from the peer swarm.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
-    public async Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> eventStreamEntry, ValueUpdateEvent updateEvent, Cid peerId, CancellationToken cancellationToken)
+    public async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, Cid peerId, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         
@@ -192,7 +192,7 @@ public class ModifiablePeerSwarm : NomadKuboEventStreamHandler<ValueUpdateEvent>
     /// <param name="arg">The peer being added or removed from the peer swarm.</param>
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
-    public Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> eventStreamEntry, ValueUpdateEvent updateEvent, IReadOnlyPeer arg, CancellationToken cancellationToken)
+    public Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, IReadOnlyPeer arg, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 

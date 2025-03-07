@@ -95,7 +95,7 @@ public class ModifiablePeer : NomadKuboEventStreamHandler<ValueUpdateEvent>, IMo
     }
 
     /// <inheritdoc />
-    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> streamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
+    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> streamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
     {
         // Transform DagCid to MultiAddress
         Guard.IsNotNull(updateEvent.Value);
@@ -106,7 +106,7 @@ public class ModifiablePeer : NomadKuboEventStreamHandler<ValueUpdateEvent>, IMo
     }
 
     /// <inheritdoc />
-    public Task ApplyEntryUpdateAsync(EventStreamEntry<Cid> streamEntry, ValueUpdateEvent updateEvent, MultiAddress address, CancellationToken cancellationToken)
+    public Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> streamEntry, ValueUpdateEvent updateEvent, MultiAddress address, CancellationToken cancellationToken)
     {
         switch (streamEntry.EventId)
         {
