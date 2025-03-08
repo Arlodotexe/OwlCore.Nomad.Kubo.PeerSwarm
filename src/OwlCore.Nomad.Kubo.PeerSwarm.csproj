@@ -57,6 +57,7 @@ Initial release of OwlCore.Nomad.Kubo.PeerSwarm.
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.2" />
+		<PackageReference Include="OwlCore.Nomad.Kubo" Version="0.15.1" />
 		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="8.0.0" PrivateAssets="All" />
 		<PackageReference Include="PolySharp" Version="1.15.0">
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -70,9 +71,5 @@ Initial release of OwlCore.Nomad.Kubo.PeerSwarm.
 	    <Pack>True</Pack>
 	    <PackagePath>\</PackagePath>
 	  </None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\..\ocnomadkubo\src\OwlCore.Nomad.Kubo.csproj" />
 	</ItemGroup>
 </Project>
