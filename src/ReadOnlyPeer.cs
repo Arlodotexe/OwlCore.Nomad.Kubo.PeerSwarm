@@ -1,10 +1,8 @@
 using CommunityToolkit.Diagnostics;
 using Ipfs;
 using OwlCore.ComponentModel;
-using OwlCore.Nomad.Kubo.PeerSwarm;
-using OwlCore.Nomad.Kubo;
 
-namespace OwlCore.Console.Nomad.Kubo.PeerSwarm;
+namespace OwlCore.Nomad.Kubo.PeerSwarm;
 
 public class ReadOnlyPeer : IReadOnlyPeer, IDelegable<Models.Peer>
 {

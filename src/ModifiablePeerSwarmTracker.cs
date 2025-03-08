@@ -1,18 +1,15 @@
-﻿using CommunityToolkit.Diagnostics;
+﻿using System.Runtime.CompilerServices;
+using CommunityToolkit.Diagnostics;
 using Ipfs;
 using OwlCore.ComponentModel;
-using OwlCore.Nomad.Kubo.PeerSwarm;
-using OwlCore.Console.Nomad.Kubo.PeerSwarm.Models.Serialization.UpdateEvents;
-using OwlCore.Nomad;
-using OwlCore.Nomad.Kubo;
-using System.Runtime.CompilerServices;
+using OwlCore.Nomad.Kubo.Events;
 
-namespace OwlCore.Console.Nomad.Kubo.PeerSwarm;
+namespace OwlCore.Nomad.Kubo.PeerSwarm;
 
 /// <summary>
 /// Represents a peer swarm tracker that can be modified.
 /// </summary>
-public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<PeerSwarmTrackerUpdateEvent>, INomadKuboEventStreamHandler<PeerSwarmTrackerUpdateEvent>, IModifiablePeerSwarmTracker, IDelegable<Models.PeerSwarmTracker>
+public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<ValueUpdateEvent>, INomadKuboEventStreamHandler<ValueUpdateEvent>, IModifiablePeerSwarmTracker, IDelegable<Models.PeerSwarmTracker>
 {
     /// <summary>
     /// Creates a new instance of <see cref="ModifiablePeerSwarmTracker"/> from the specified handler configuration.
@@ -94,17 +91,25 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<PeerSwarmT
     /// <inheritdoc />
     public async Task AddAsync(IReadOnlyPeerSwarm peerSwarm, CancellationToken cancellationToken)
     {
-        var addEvent = new PeerSwarmTrackerAddEvent(peerSwarm.Id, peerSwarm.Id);
-        await ApplyEntryUpdateAsync(addEvent, peerSwarm, cancellationToken);
-        EventStreamPosition = await AppendNewEntryAsync(addEvent, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var peerSwarmIdCid = await Client.Dag.PutAsync(peerSwarm.Id, pin: KuboOptions.ShouldPin, cancel: cancellationToken);
+        var addEvent = new ValueUpdateEvent(null, (DagCid)peerSwarmIdCid, false);
+
+        EventStreamPosition = await AppendNewEntryAsync(targetId: EventStreamHandlerId, eventId: nameof(AddAsync), addEvent, DateTime.UtcNow, cancellationToken);
+        await ApplyEntryUpdateAsync(EventStreamPosition, addEvent, peerSwarm, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task RemoveAsync(IReadOnlyPeerSwarm peerSwarm, CancellationToken cancellationToken)
     {
-        var removeEvent = new PeerSwarmTrackerRemoveEvent(peerSwarm.Id, peerSwarm.Id);
-        await ApplyEntryUpdateAsync(removeEvent, peerSwarm, cancellationToken);
-        EventStreamPosition = await AppendNewEntryAsync(removeEvent, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var peerSwarmIdCid = await Client.Dag.PutAsync(peerSwarm.Id, pin: KuboOptions.ShouldPin, cancel: cancellationToken);
+        var removeEvent = new ValueUpdateEvent(null, (DagCid)peerSwarmIdCid, true);
+
+        EventStreamPosition = await AppendNewEntryAsync(targetId: EventStreamHandlerId, eventId: nameof(RemoveAsync), removeEvent, DateTime.UtcNow, cancellationToken);
+        await ApplyEntryUpdateAsync(EventStreamPosition, removeEvent, peerSwarm, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -132,19 +137,53 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<PeerSwarmT
     }
 
     /// <inheritdoc />
-    public async Task ApplyEntryUpdateAsync(PeerSwarmTrackerUpdateEvent updateEvent, IReadOnlyPeerSwarm arg, CancellationToken cancellationToken)
+    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
     {
-        switch (updateEvent)
+        cancellationToken.ThrowIfCancellationRequested();
+        
+        Guard.IsNotNull(updateEvent.Value);
+        var peerSwarmId = await Client.Dag.GetAsync<Cid>(updateEvent.Value, cancel: cancellationToken);
+
+        await ApplyEntryUpdateAsync(eventStreamEntry, updateEvent, peerSwarmId, cancellationToken);
+    }
+
+    /// <summary>
+    /// Applies an event stream update event and raises the relevant events.
+    /// </summary>
+    /// <param name="eventStreamEntry">The event stream entry to apply.</param>
+    /// <param name="updateEvent">The update event to apply.</param>
+    /// <param name="peerSwarmId">The ID of the peer swarm being added or removed from the peer swarm tracker.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
+    public async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, Cid peerSwarmId, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        
+        var arg = await GetAsync(peerSwarmId, cancellationToken);
+        await ApplyEntryUpdateAsync(eventStreamEntry, updateEvent, arg, cancellationToken);
+    }
+
+    /// <summary>
+    /// Applies an event stream update event and raises the relevant events.
+    /// </summary>
+    /// <param name="eventStreamEntry">The event stream entry to apply.</param>
+    /// <param name="updateEvent">The update event to apply.</param>
+    /// <param name="arg">The peer being added or removed from the peer swarm.</param>
+    /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
+    /// <exception cref="ArgumentOutOfRangeException">Unknown <see cref="EventStreamEntry{TContentPointer}.EventId"/>.</exception>
+    public Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> eventStreamEntry, ValueUpdateEvent updateEvent, IReadOnlyPeerSwarm arg, CancellationToken cancellationToken)
+    {
+        switch (eventStreamEntry.EventId)
         {
-            case PeerSwarmTrackerAddEvent peerAddedEvent:
+            case nameof(AddAsync):
                 {
-                    Inner.PeerSwarms = [.. Inner.PeerSwarms, peerAddedEvent.PeerSwarmId];
+                    Inner.PeerSwarms = [.. Inner.PeerSwarms, arg.Id];
                     ItemsAdded?.Invoke(this, [arg]);
                     break;
                 }
-            case PeerSwarmTrackerRemoveEvent peerRemovedEvent:
+            case nameof(RemoveAsync):
                 {
-                    var targetPeer = Inner.PeerSwarms.FirstOrDefault(x => x == peerRemovedEvent.PeerSwarmId);
+                    var targetPeer = Inner.PeerSwarms.FirstOrDefault(x => x == arg.Id);
                     if (targetPeer is not null)
                     {
                         Inner.PeerSwarms = Inner.PeerSwarms.Where(x => x != targetPeer).ToArray();
@@ -155,42 +194,8 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<PeerSwarmT
             default:
                 throw new ArgumentOutOfRangeException(nameof(updateEvent), updateEvent, null);
         }
-    }
 
-    /// <inheritdoc />
-    public override async Task ApplyEntryUpdateAsync(PeerSwarmTrackerUpdateEvent updateEvent, CancellationToken cancellationToken)
-    {
-        switch (updateEvent)
-        {
-            case PeerSwarmTrackerAddEvent peerAddedEvent:
-                {
-                    Inner.PeerSwarms = [.. Inner.PeerSwarms, peerAddedEvent.PeerSwarmId];
-                    var arg = await GetAsync(peerAddedEvent.PeerSwarmId, cancellationToken);
-                    ItemsAdded?.Invoke(this, [arg]);
-                    break;
-                }
-            case PeerSwarmTrackerRemoveEvent peerRemovedEvent:
-                {
-                    var targetPeer = Inner.PeerSwarms.FirstOrDefault(x => x == peerRemovedEvent.PeerSwarmId);
-                    if (targetPeer is not null)
-                    {
-                        Inner.PeerSwarms = Inner.PeerSwarms.Where(x => x != targetPeer).ToArray();
-                        var arg = await GetAsync(peerRemovedEvent.PeerSwarmId, cancellationToken);
-                        ItemsRemoved?.Invoke(this, [arg]);
-                    }
-                    break;
-                }
-            default:
-                throw new ArgumentOutOfRangeException(nameof(updateEvent), updateEvent, null);
-        }
-    }
-
-    /// <inheritdoc cref="INomadKuboEventStreamHandler{TEventEntryContent}.AppendNewEntryAsync" />
-    public override async Task<EventStreamEntry<Cid>> AppendNewEntryAsync(PeerSwarmTrackerUpdateEvent updateEvent, CancellationToken cancellationToken = default)
-    {
-        var localUpdateEventCid = await Client.Dag.PutAsync(updateEvent, pin: KuboOptions.ShouldPin, cancel: cancellationToken);
-        var newEntry = await this.AppendEventStreamEntryAsync(localUpdateEventCid, updateEvent.EventId, targetId: EventStreamHandlerId, cancellationToken);
-        return newEntry;
+        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -199,8 +204,8 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<PeerSwarmT
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     public Task FlushAsync(CancellationToken cancellationToken)
     {
-        var localPublish = this.PublishLocalAsync<ModifiablePeerSwarmTracker, PeerSwarmTrackerUpdateEvent>(cancellationToken);
-        var roamingPublish = this.PublishRoamingAsync<ModifiablePeerSwarmTracker, PeerSwarmTrackerUpdateEvent, Models.PeerSwarmTracker>(cancellationToken);
+        var localPublish = this.PublishLocalAsync<ModifiablePeerSwarmTracker, ValueUpdateEvent>(cancellationToken);
+        var roamingPublish = this.PublishRoamingAsync<ModifiablePeerSwarmTracker, ValueUpdateEvent, Models.PeerSwarmTracker>(cancellationToken);
 
         return Task.WhenAll(localPublish, roamingPublish);
     }

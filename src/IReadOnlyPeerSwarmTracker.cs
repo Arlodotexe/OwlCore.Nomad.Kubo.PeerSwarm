@@ -1,6 +1,4 @@
 using OwlCore.ComponentModel;
-using OwlCore.Console.Nomad.Kubo;
-using OwlCore.Nomad.Kubo;
 
 namespace OwlCore.Nomad.Kubo.PeerSwarm;
 

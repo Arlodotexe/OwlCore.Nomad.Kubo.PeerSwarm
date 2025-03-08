@@ -1,17 +1,14 @@
 ﻿using CommunityToolkit.Diagnostics;
 using Ipfs;
 using OwlCore.ComponentModel;
-using OwlCore.Nomad.Kubo.PeerSwarm;
-using OwlCore.Console.Nomad.Kubo.PeerSwarm.Models.Serialization.UpdateEvents;
-using OwlCore.Nomad;
-using OwlCore.Nomad.Kubo;
+using OwlCore.Nomad.Kubo.Events;
 
-namespace OwlCore.Console.Nomad.Kubo.PeerSwarm;
+namespace OwlCore.Nomad.Kubo.PeerSwarm;
 
 /// <summary>
 /// Represents a peer that can be modified.
 /// </summary>
-public class ModifiablePeer : NomadKuboEventStreamHandler<PeerSwarmUpdateEvent>, IModifiablePeer, IDelegable<Models.Peer>
+public class ModifiablePeer : NomadKuboEventStreamHandler<ValueUpdateEvent>, IModifiablePeer, IDelegable<Models.Peer>
 {
     /// <summary>
     /// Creates a new instance of <see cref="ModifiablePeer"/> from the specified handler configuration.
@@ -70,17 +67,23 @@ public class ModifiablePeer : NomadKuboEventStreamHandler<PeerSwarmUpdateEvent>,
     /// <inheritdoc />
     public async Task AddAddressAsync(MultiAddress address, CancellationToken cancellationToken)
     {
-        var addAddressEvent = new PeerSwarmPeerAddressAddEvent(EventStreamHandlerId, address);
-        await ApplyEntryUpdateAsync(addAddressEvent, cancellationToken);
-        await AppendNewEntryAsync(addAddressEvent, cancellationToken);
+        // Transform MultiAddress to DagCid
+        var cid = await Client.Dag.PutAsync(address, pin: KuboOptions.ShouldPin, cancel: cancellationToken);
+
+        var addAddressEvent = new ValueUpdateEvent(null, (DagCid)cid, false);
+        EventStreamPosition = await AppendNewEntryAsync(targetId: EventStreamHandlerId, eventId: nameof(AddAddressAsync), addAddressEvent, DateTime.UtcNow, cancellationToken);
+        await ApplyEntryUpdateAsync(EventStreamPosition, addAddressEvent, address, cancellationToken);
     }
 
     /// <inheritdoc />
     public async Task RemoveAddressAsync(MultiAddress address, CancellationToken cancellationToken)
     {
-        var removeAddressEvent = new PeerSwarmPeerAddressRemoveEvent(EventStreamHandlerId, address);
-        await ApplyEntryUpdateAsync(removeAddressEvent, cancellationToken);
-        await AppendNewEntryAsync(removeAddressEvent, cancellationToken);
+        // Transform MultiAddress to DagCid
+        var cid = await Client.Dag.PutAsync(address, pin: KuboOptions.ShouldPin, cancel: cancellationToken);
+
+        var removeAddressEvent = new ValueUpdateEvent(null, (DagCid)cid, true);
+        EventStreamPosition = await AppendNewEntryAsync(targetId: EventStreamHandlerId, eventId: nameof(RemoveAddressAsync), removeAddressEvent, DateTime.UtcNow, cancellationToken);
+        await ApplyEntryUpdateAsync(EventStreamPosition, removeAddressEvent, address, cancellationToken);
     }
 
     /// <inheritdoc />
@@ -92,37 +95,39 @@ public class ModifiablePeer : NomadKuboEventStreamHandler<PeerSwarmUpdateEvent>,
     }
 
     /// <inheritdoc />
-    public override Task ApplyEntryUpdateAsync(PeerSwarmUpdateEvent updateEvent, CancellationToken cancellationToken)
+    public override async Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> streamEntry, ValueUpdateEvent updateEvent, CancellationToken cancellationToken)
     {
-        switch (updateEvent)
+        // Transform DagCid to MultiAddress
+        Guard.IsNotNull(updateEvent.Value);
+        var address = await Client.Dag.GetAsync<MultiAddress>(updateEvent.Value, cancel: cancellationToken);
+        
+        Guard.IsNotNull(address);
+        await ApplyEntryUpdateAsync(streamEntry, updateEvent, address, cancellationToken);
+    }
+
+    /// <inheritdoc />
+    public Task ApplyEntryUpdateAsync(EventStreamEntry<DagCid> streamEntry, ValueUpdateEvent updateEvent, MultiAddress address, CancellationToken cancellationToken)
+    {
+        switch (streamEntry.EventId)
         {
-            case PeerSwarmPeerAddressAddEvent peerAddressAddedEvent:
+            case nameof(AddAddressAsync):
+            {
+                if (Inner.Addresses.All(x => x.ToString() != address))
                 {
-                    if (Inner.Addresses.All(x => x.ToString() != peerAddressAddedEvent.Address.ToString()))
-                    {
-                        Inner.Addresses = [.. Inner.Addresses, peerAddressAddedEvent.Address];
-                        PeerAddressesAdded?.Invoke(this, [peerAddressAddedEvent.Address]);
-                    }
-                    break;
+                    Inner.Addresses = [.. Inner.Addresses, address];
+                    PeerAddressesAdded?.Invoke(this, [address]);
                 }
-            case PeerSwarmPeerAddressRemoveEvent peerAddressRemovedEvent:
-                {
-                    Inner.Addresses = [.. Inner.Addresses.Except([peerAddressRemovedEvent.Address])];
-                    PeerAddressesRemoved?.Invoke(this, [peerAddressRemovedEvent.Address]);
-                    break;
-                }
+                break;
+            }
+            case nameof(RemoveAddressAsync):
+            {
+                Inner.Addresses = [.. Inner.Addresses.Except([address])];
+                PeerAddressesRemoved?.Invoke(this, [address]);
+                break;
+            }
         }
 
         return Task.CompletedTask;
-    }
-
-    /// <inheritdoc cref="INomadKuboEventStreamHandler{TEventEntryContent}.AppendNewEntryAsync" />
-    public override async Task<EventStreamEntry<Cid>> AppendNewEntryAsync(PeerSwarmUpdateEvent updateEvent, CancellationToken cancellationToken = default)
-    {
-        // Use extension method for code deduplication (can't use inheritance).
-        var localUpdateEventCid = await Client.Dag.PutAsync(updateEvent, pin: KuboOptions.ShouldPin, cancel: cancellationToken);
-        var newEntry = await this.AppendEventStreamEntryAsync(localUpdateEventCid, updateEvent.EventId, targetId: EventStreamHandlerId, cancellationToken);
-        return newEntry;
     }
 
     /// <summary>
@@ -131,8 +136,8 @@ public class ModifiablePeer : NomadKuboEventStreamHandler<PeerSwarmUpdateEvent>,
     /// <param name="cancellationToken">A token that can be used to cancel the ongoing operation.</param>
     public Task FlushAsync(CancellationToken cancellationToken)
     {
-        var localPublish = this.PublishLocalAsync<ModifiablePeer, PeerSwarmUpdateEvent>(cancellationToken);
-        var roamingPublish = this.PublishRoamingAsync<ModifiablePeer, PeerSwarmUpdateEvent, Models.Peer>(cancellationToken);
+        var localPublish = this.PublishLocalAsync<ModifiablePeer, ValueUpdateEvent>(cancellationToken);
+        var roamingPublish = this.PublishRoamingAsync<ModifiablePeer, ValueUpdateEvent, Models.Peer>(cancellationToken);
         
         return Task.WhenAll(localPublish, roamingPublish);
     }
