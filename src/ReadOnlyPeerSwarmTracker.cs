@@ -20,7 +20,7 @@ public class ReadOnlyPeerSwarmTracker : IReadOnlyPeerSwarmTracker, IDelegable<Pe
     /// <param name="kuboOptions">The options used to read and write data to and from Kubo.</param>
     /// <param name="client">The IPFS client used to interact with the network.</param>
     /// <returns>A new instance of <see cref="ReadOnlyPeer"/>.</returns>
-    public static ReadOnlyPeerSwarmTracker FromHandlerConfig(NomadKuboEventStreamHandlerConfig<PeerSwarmTracker> handlerConfig, INomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm>? peerSwarmRepository, INomadKuboRepository<ModifiablePeer, IReadOnlyPeer>? peerRepository, IKuboOptions kuboOptions, ICoreApi client)
+    public static ReadOnlyPeerSwarmTracker FromHandlerConfig(NomadKuboEventStreamHandlerConfig<PeerSwarmTracker> handlerConfig, INomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm> peerSwarmRepository, INomadKuboRepository<ModifiablePeer, IReadOnlyPeer> peerRepository, IKuboOptions kuboOptions, ICoreApi client)
     {
         Guard.IsNotNull(handlerConfig.RoamingId);
         Guard.IsNotNull(handlerConfig.RoamingValue);
@@ -44,12 +44,12 @@ public class ReadOnlyPeerSwarmTracker : IReadOnlyPeerSwarmTracker, IDelegable<Pe
     /// <summary>
     /// Gets the repository used to get, create and manage peer swarms.
     /// </summary>
-    public required INomadKuboRepository<ModifiablePeer, IReadOnlyPeer>? PeerRepository { get; init; }
+    public required INomadKuboRepository<ModifiablePeer, IReadOnlyPeer> PeerRepository { get; init; }
 
     /// <summary>
     /// Gets the repository used to get, create and manage peers.
     /// </summary>
-    public required INomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm>? PeerSwarmRepository { get; init; }
+    public required INomadKuboRepository<ModifiablePeerSwarm, IReadOnlyPeerSwarm> PeerSwarmRepository { get; init; }
 
     /// <summary>
     /// The roaming Id for this peer swarm tracker.
@@ -86,22 +86,6 @@ public class ReadOnlyPeerSwarmTracker : IReadOnlyPeerSwarmTracker, IDelegable<Pe
     public async Task<IReadOnlyPeerSwarm> GetAsync(string id, CancellationToken cancellationToken)
     {
         // Use PeerSwarmRepository if it is available
-        if (PeerSwarmRepository != null)
-            return await PeerSwarmRepository.GetAsync(id, cancellationToken);
-
-        cancellationToken.ThrowIfCancellationRequested();
-        var peerSwarmCid = Cid.Decode(id);
-
-        var (roamingData, _) = await peerSwarmCid.ResolveDagCidAsync<Models.PeerSwarm>(Client, nocache: !KuboOptions.UseCache, cancellationToken);
-        Guard.IsNotNull(roamingData);
-
-        return new ReadOnlyPeerSwarm
-        {
-            PeerRepository = PeerRepository,
-            Id = peerSwarmCid,
-            Inner = roamingData,
-            Client = Client,
-            KuboOptions = KuboOptions,
-        };
+        return await PeerSwarmRepository.GetAsync(id, cancellationToken);
     }
 }
