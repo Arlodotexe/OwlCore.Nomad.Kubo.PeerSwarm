@@ -33,7 +33,7 @@ public class ModifiablePeerSwarmTracker : NomadKuboEventStreamHandler<ValueUpdat
             LocalEventStream = handlerConfig.LocalValue,
             RoamingKey = handlerConfig.RoamingKey,
             LocalEventStreamKey = handlerConfig.LocalKey,
-            Sources = handlerConfig.RoamingValue.Sources,
+            Sources = handlerConfig.Sources,
             KuboOptions = kuboOptions,
             Client = client,
         };
